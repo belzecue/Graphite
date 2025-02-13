@@ -1637,6 +1637,9 @@ impl<'a> MessageHandler<NodeGraphMessage, NodeGraphHandlerData<'a>> for NodeGrap
 			NodeGraphMessage::UpdateEdges => {
 				// Update the import/export UI edges whenever the PTZ changes or the bounding box of all nodes changes
 			}
+			NodeGraphMessage::UpdateErrors { node_graph_errors } => {
+				self.node_graph_errors = node_graph_errors;
+			}
 			NodeGraphMessage::UpdateNewNodeGraph => {
 				let Some(selected_nodes) = network_interface.selected_nodes_mut(selection_network_path) else {
 					log::error!("Could not get selected nodes in NodeGraphMessage::UpdateNewNodeGraph");
@@ -1646,15 +1649,6 @@ impl<'a> MessageHandler<NodeGraphMessage, NodeGraphHandlerData<'a>> for NodeGrap
 				responses.add(BroadcastEvent::SelectionChanged);
 
 				responses.add(NodeGraphMessage::SendGraph);
-			}
-			NodeGraphMessage::UpdateTypes { resolved_types, node_graph_errors } => {
-				for (path, node_type) in resolved_types.add {
-					network_interface.resolved_types.types.insert(path.to_vec(), node_type);
-				}
-				for path in resolved_types.remove {
-					network_interface.resolved_types.types.remove(&path.to_vec());
-				}
-				self.node_graph_errors = node_graph_errors;
 			}
 			NodeGraphMessage::UpdateActionButtons => {
 				if selection_network_path == breadcrumb_network_path {

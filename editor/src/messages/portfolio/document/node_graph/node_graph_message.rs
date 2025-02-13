@@ -200,16 +200,14 @@ pub enum NodeGraphMessage {
 		node_ids: Vec<NodeId>,
 	},
 	UpdateEdges,
+	UpdateErrors {
+		#[serde(skip)]
+		node_graph_errors: GraphErrors,
+	},
 	UpdateBoxSelection,
 	UpdateImportsExports,
 	UpdateLayerPanel,
 	UpdateNewNodeGraph,
-	UpdateTypes {
-		#[serde(skip)]
-		resolved_types: ResolvedDocumentNodeTypesDelta,
-		#[serde(skip)]
-		node_graph_errors: GraphErrors,
-	},
 	UpdateActionButtons,
 	UpdateGraphBarRight,
 	UpdateInSelectedNetwork,

@@ -35,6 +35,7 @@ use graphene_std::renderer::{ClickTarget, Quad};
 use graphene_std::vector::{path_bool_lib, PointId};
 
 use glam::{DAffine2, DVec2, IVec2};
+use interpreted_executor::dynamic_executor::ResolvedDocumentNodeTypes;
 
 pub struct DocumentMessageData<'a> {
 	pub document_id: DocumentId,
@@ -123,6 +124,9 @@ pub struct DocumentMessageHandler {
 	/// Whether or not the editor has executed the network to render the document yet. If this is opened as an inactive tab, it won't be loaded initially because the active tab is prioritized.
 	#[serde(skip)]
 	pub is_loaded: bool,
+	/// All input/output types based on the compiled network.
+	#[serde(skip)]
+	pub resolved_types: ResolvedDocumentNodeTypes,
 }
 
 impl Default for DocumentMessageHandler {
@@ -161,6 +165,7 @@ impl Default for DocumentMessageHandler {
 			auto_saved_hash: None,
 			layer_range_selection_reference: None,
 			is_loaded: false,
+			resolved_types: ResolvedDocumentNodeTypes::default(),
 		}
 	}
 }
@@ -735,6 +740,7 @@ impl MessageHandler<DocumentMessage, DocumentMessageData<'_>> for DocumentMessag
 					});
 				}
 			}
+			
 			DocumentMessage::PasteImage {
 				name,
 				image,
@@ -1163,6 +1169,14 @@ impl MessageHandler<DocumentMessage, DocumentMessageData<'_>> for DocumentMessag
 			}
 			DocumentMessage::UpdateClipTargets { clip_targets } => {
 				self.network_interface.update_clip_targets(clip_targets);
+			}
+			DocumentMessage::UpdateTypes { resolved_types } => {
+				for (path, node_type) in resolved_types.add {
+					self.resolved_types.types.insert(path.to_vec(), node_type);
+				}
+				for path in resolved_types.remove {
+					self.resolved_types.types.remove(&path.to_vec());
+				}
 			}
 			DocumentMessage::Undo => {
 				if self.network_interface.transaction_status() != TransactionStatus::Finished {
@@ -1643,7 +1657,6 @@ impl DocumentMessageHandler {
 
 		// Set the previous network navigation metadata to the current navigation metadata
 		network_interface.copy_all_navigation_metadata(&self.network_interface);
-		std::mem::swap(&mut network_interface.resolved_types, &mut self.network_interface.resolved_types);
 
 		//Update the metadata transform based on document PTZ
 		let transform = self.navigation_handler.calculate_offset_transform(ipp.viewport_bounds.center(), &self.document_ptz);
@@ -1679,7 +1692,6 @@ impl DocumentMessageHandler {
 
 		// Set the previous network navigation metadata to the current navigation metadata
 		network_interface.copy_all_navigation_metadata(&self.network_interface);
-		std::mem::swap(&mut network_interface.resolved_types, &mut self.network_interface.resolved_types);
 
 		//Update the metadata transform based on document PTZ
 		let transform = self.navigation_handler.calculate_offset_transform(ipp.viewport_bounds.center(), &self.document_ptz);

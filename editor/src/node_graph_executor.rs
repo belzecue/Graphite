@@ -588,10 +588,8 @@ impl NodeGraphExecutor {
 
 							log::trace!("{e}");
 
-							responses.add(NodeGraphMessage::UpdateTypes {
-								resolved_types: Default::default(),
-								node_graph_errors,
-							});
+							responses.add(DocumentMessage::UpdateTypes { resolved_types: Default::default() });
+							responses.add(NodeGraphMessage::UpdateErrors { node_graph_errors });
 							responses.add(NodeGraphMessage::SendGraph);
 
 							return Err(format!("Node graph evaluation failed:\n{e}"));
@@ -599,10 +597,8 @@ impl NodeGraphExecutor {
 						Ok(result) => result,
 					};
 
-					responses.add(NodeGraphMessage::UpdateTypes {
-						resolved_types: type_delta,
-						node_graph_errors,
-					});
+					responses.add(DocumentMessage::UpdateTypes { resolved_types: type_delta });
+					responses.add(NodeGraphMessage::UpdateErrors { node_graph_errors });
 					responses.add(NodeGraphMessage::SendGraph);
 				}
 				NodeGraphUpdate::NodeGraphUpdateMessage(NodeGraphUpdateMessage::ImaginateStatusUpdate) => {

@@ -13,6 +13,7 @@ use graphene_core::vector::style::ViewMode;
 use graphene_core::Color;
 use graphene_std::renderer::ClickTarget;
 use graphene_std::transform::Footprint;
+use interpreted_executor::dynamic_executor::ResolvedDocumentNodeTypesDelta;
 
 use glam::DAffine2;
 
@@ -178,6 +179,10 @@ pub enum DocumentMessage {
 	},
 	UpdateClipTargets {
 		clip_targets: HashSet<NodeId>,
+	},
+	UpdateTypes {
+		#[serde(skip)]
+		resolved_types: ResolvedDocumentNodeTypesDelta,
 	},
 	Undo,
 	UngroupSelectedLayers,
