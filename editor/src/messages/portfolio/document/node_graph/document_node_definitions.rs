@@ -2737,6 +2737,7 @@ fn static_nodes() -> Vec<DocumentNodeDefinition> {
 							RegistryWidgetOverride::Custom(str) => PropertiesRow::with_override(f.name, WidgetOverride::Custom(str.to_string())),
 						})
 						.collect(),
+					input_descriptions: fields.iter().map(|f| f.description.to_string()).collect(),
 					output_names: vec![output_type.to_string()],
 					has_primary_output: true,
 					locked: false,

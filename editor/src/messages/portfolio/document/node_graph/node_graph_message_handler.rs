@@ -2039,9 +2039,10 @@ impl NodeGraphMessageHandler {
 							!context.network_interface.is_layer(node_id, context.selection_network_path)
 						}
 					})
+					.map(|(_, node_id)| node_id)
 					.collect::<Vec<_>>()
-					.iter()
-					.map(|(_, node_id)| node_properties::generate_node_properties(*node_id, context))
+					.into_iter()
+					.map(|node_id| node_properties::generate_node_properties(node_id, context))
 					.collect::<Vec<_>>();
 
 				layer_properties.extend(node_properties);

@@ -108,12 +108,9 @@ export class UpdateNodeGraphTransform extends JsMessage {
 	readonly transform!: NodeGraphTransform;
 }
 
-const InputTypeDescriptions = Transform(({ obj }) => new Map(obj.inputTypeDescriptions));
 const NodeDescriptions = Transform(({ obj }) => new Map(obj.nodeDescriptions));
 
 export class SendUIMetadata extends JsMessage {
-	@InputTypeDescriptions
-	readonly inputTypeDescriptions!: Map<string, string>;
 	@NodeDescriptions
 	readonly nodeDescriptions!: Map<string, string>;
 	@Type(() => FrontendNode)

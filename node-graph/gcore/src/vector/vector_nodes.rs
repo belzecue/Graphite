@@ -620,6 +620,8 @@ async fn sample_points(_: impl Ctx, vector_data: VectorDataTable, spacing: f64, 
 	result
 }
 
+/// Determines the position of a point on the path, given by its progress from 0 to 1 along the path.
+/// If multiple subpaths make up the path, the whole number part of the progress value selects the subpath and the decimal part determines the position along it.
 #[node_macro::node(name("Position on Path"), category("Vector"), path(graphene_core::vector))]
 async fn position_on_path(
 	_: impl Ctx,
@@ -629,9 +631,11 @@ async fn position_on_path(
 	progress: f64,
 	/// Swap the direction of the path.
 	reverse: bool,
-	/// Traverse the path using the Euclidean distance instead of the parametric distance. Respects actual distances but slower to compute.
-	euclidian: bool,
+	/// Traverse the path using each segment's Bézier curve parameterization instead of the Euclidean distance. Faster to compute but doesn't respect actual distances.
+	parameterized_distance: bool,
 ) -> DVec2 {
+	let euclidian = !parameterized_distance;
+
 	let vector_data_transform = vector_data.transform();
 	let vector_data = vector_data.one_instance().instance;
 
@@ -648,6 +652,8 @@ async fn position_on_path(
 	})
 }
 
+/// Determines the angle of the tangent at a point on the path, given by its progress from 0 to 1 along the path.
+/// If multiple subpaths make up the path, the whole number part of the progress value selects the subpath and the decimal part determines the position along it.
 #[node_macro::node(name("Tangent on Path"), category("Vector"), path(graphene_core::vector))]
 async fn tangent_on_path(
 	_: impl Ctx,
@@ -657,10 +663,11 @@ async fn tangent_on_path(
 	progress: f64,
 	/// Swap the direction of the path.
 	reverse: bool,
-	/// Traverse the path using the Euclidean distance instead of the parametric distance. Respects actual distances but slower to compute.
-	#[default(true)]
-	euclidian: bool,
+	/// Traverse the path using each segment's Bézier curve parameterization instead of the Euclidean distance. Faster to compute but doesn't respect actual distances.
+	parameterized_distance: bool,
 ) -> f64 {
+	let euclidian = !parameterized_distance;
+
 	let vector_data_transform = vector_data.transform();
 	let vector_data = vector_data.one_instance().instance;
 

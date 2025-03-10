@@ -2150,11 +2150,14 @@ pub(crate) fn generate_node_properties(node_id: NodeId, context: &mut NodeProper
 								break 'early_return default.clone();
 							}
 						}
+
 						let Some(implementations) = &interpreted_executor::node_registry::NODE_REGISTRY.get(proto_node_identifier) else {
 							log::error!("Could not get implementation for protonode {proto_node_identifier:?}");
 							return Vec::new();
 						};
+
 						let proto_node_identifier = proto_node_identifier.clone();
+
 						let mut input_types = implementations
 							.keys()
 							.filter_map(|item| item.inputs.get(input_index))
@@ -2162,10 +2165,12 @@ pub(crate) fn generate_node_properties(node_id: NodeId, context: &mut NodeProper
 							.collect::<Vec<_>>();
 						input_types.sort_by_key(|ty| ty.type_name());
 						let input_type = input_types.first().cloned();
+
 						let Some(input_type) = input_type else {
 							log::error!("Could not get input type for protonode {proto_node_identifier:?} at index {input_index:?}");
 							return Vec::new();
 						};
+
 						input_type.clone()
 					}
 					_ => context.network_interface.input_type(&InputConnector::node(node_id, input_index), context.selection_network_path).0,
@@ -2173,6 +2178,7 @@ pub(crate) fn generate_node_properties(node_id: NodeId, context: &mut NodeProper
 
 				property_from_type(node_id, input_index, &input_type, number_options, context).unwrap_or_else(|value| value)
 			});
+
 			layout.extend(row);
 		}
 	}

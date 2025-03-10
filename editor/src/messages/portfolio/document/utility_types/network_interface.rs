@@ -1132,6 +1132,14 @@ impl NodeNetworkInterface {
 		value.as_str()
 	}
 
+	pub fn input_description(&self, node_id: &NodeId, index: usize, network_path: &[NodeId]) -> Option<&str> {
+		let Some(value) = self.input_metadata(node_id, index, "input_name", network_path) else {
+			log::error!("Could not get input_name for node {node_id} index {index}");
+			return None;
+		};
+		value.as_str()
+	}
+
 	pub fn input_properties_row(&self, node_id: &NodeId, index: usize, network_path: &[NodeId]) -> Option<&PropertiesRow> {
 		self.node_metadata(node_id, network_path)
 			.and_then(|node_metadata| node_metadata.persistent_metadata.input_properties.get(index))
@@ -6159,7 +6167,7 @@ pub enum WidgetOverride {
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct PropertiesRow {
 	/// A general datastore than can store key value pairs of any types for any input
-	// TODO: This could be simplified to just Value, and key value pairs could be stored as the Object variant
+	// TODO: This could be simplified to just Value, and key value pairs could be stored as the Value::Object variant
 	pub input_data: HashMap<String, Value>,
 	// An input can override a widget, which would otherwise be automatically generated from the type
 	// The string is the identifier to the widget override function stored in INPUT_OVERRIDES
@@ -6285,6 +6293,7 @@ pub struct DocumentNodePersistentMetadata {
 	/// Stores metadata to override the properties in the properties panel for each input. These can either be generated automatically based on the type, or with a custom function.
 	/// Must match the length of node inputs
 	pub input_properties: Vec<PropertiesRow>,
+	pub input_descriptions: Vec<String>,
 	#[serde(deserialize_with = "migrate_output_names")]
 	pub output_names: Vec<String>,
 	/// Indicates to the UI if a primary output should be drawn for this node.
@@ -6310,6 +6319,7 @@ impl Default for DocumentNodePersistentMetadata {
 			reference: None,
 			display_name: String::new(),
 			input_properties: Vec::new(),
+			input_descriptions: Vec::new(),
 			output_names: Vec::new(),
 			has_primary_output: true,
 			pinned: false,
@@ -6352,11 +6362,13 @@ impl From<DocumentNodePersistentMetadataInputNames> for DocumentNodePersistentMe
 			.and_then(|reference| resolve_document_node_type(reference))
 			.map(|definition| definition.node_template.persistent_node_metadata.input_properties.clone())
 			.unwrap_or(old.input_names.into_iter().map(|name| name.as_str().into()).collect());
+		let input_descriptions = input_properties.iter().map(|_| String::new()).collect();
 
 		DocumentNodePersistentMetadata {
 			reference: old.reference,
 			display_name: old.display_name,
 			input_properties,
+			input_descriptions,
 			output_names: old.output_names,
 			has_primary_output: old.has_primary_output,
 			locked: old.locked,
